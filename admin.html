@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Tour Timer admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="admin">
+<div class="wrap">
+  <header class="bar">
+    <div class="title"><h1>Tour Timer admin</h1><span class="tag" id="env-tag" hidden></span></div>
+  </header>
+  <main id="admin"></main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="assets/core.js"></script>
+<script src="assets/config.js"></script>
+<script>
+  // Shows "Test: sample data only" while testing; config.js sets it.
+  if (CONFIG.environmentLabel) { const t = document.getElementById('env-tag'); t.textContent = CONFIG.environmentLabel; t.hidden = false; }
+</script>
+<script src="assets/app.js"></script>
+</body>
+</html>
