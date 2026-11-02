@@ -2,7 +2,7 @@
    Guides, codes, tour times and promo messages live in the Google Sheet. */
 Object.assign(CONFIG, {
   // The web app address from Apps Script: Deploy > Manage deployments > Web app URL (ends in /exec).
-  apiUrl: 'PASTE_YOUR_WEB_APP_URL_HERE',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbxSMnehoUfYOgAqAj5-tpUWPWLtETeZlv1D2UIWLdHYhc65cMlr2e7BpkJTIgbWan_w/exec',
   environmentLabel: 'Test: sample data only',   // shown on the phones and admin page; set to '' when live
 
   // TV
