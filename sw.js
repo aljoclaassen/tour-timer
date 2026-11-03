@@ -1,7 +1,7 @@
 /* Keeps the Tour Timer pages opening on a phone or TV that has lost signal.
    Pages and assets: network first, so updates arrive, with the saved copy as the fallback.
    Calls to the Google web app and to Google Fonts are never cached. */
-const CACHE = 'tour-timer-v1';   // change the number when you want every device to drop its old copy
+const CACHE = 'tour-timer-v2';   // change the number when you want every device to drop its old copy
 const FILES = ['tv.html', 'phone.html', 'admin.html', 'assets/app.css', 'assets/core.js', 'assets/config.js', 'assets/app.js',
   'assets/img/logo-black-text.png', 'assets/img/logo-white-text.png', 'assets/img/spots.png'];
 
