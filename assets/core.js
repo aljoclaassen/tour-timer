@@ -170,6 +170,7 @@ function applyOp(s, op, syncedAt) {
     case 'noTour': {
       let t = find(op.tourId);
       if (t && t.status !== 'gathering') { log('Not applied', 'Tour had already left'); return; }
+      if (!t && !op.slot) { log('Not applied', 'No tour was recorded because the time slot was missing'); return; }
       if (!t) {
         if (s.tours.some(x => x.date === op.date && x.slot === op.slot)) { log('Not applied', `The ${op.slot} tour was already logged`); return; }
         t = { ...blank, id: op.tourId, date: op.date, slot: op.slot, type: 'Scheduled', guideId: null, claimedAt: null, plannedAt: at(op.date, op.slot) };
