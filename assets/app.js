@@ -247,7 +247,7 @@ function panelHtml(kind, t, s) {
       </div>
       ${errLine()}
       <div class="row-flex"><button class="btn primary">Split tour</button><button type="button" class="btn" data-act="close">Cancel</button></div></form>`;
-  if (kind === 'notour') return `<form class="panel" data-form="notour" data-ref="${t ? t.id : ''}" data-slot="${ui.panel.ref}" novalidate>
+  if (kind === 'notour') return `<form class="panel" data-form="notour" data-ref="${t ? t.id : ''}" data-slot="${t ? (t.slot || '') : ui.panel.ref}" novalidate>
       <div class="field"><label for="f-why">Why was there no tour?</label><select id="f-why" name="reason">${options(CONFIG.noTourReasons)}</select></div>
       <div class="grid2">
         ${numField('f-self', 'self', 'Chose self-guided', t ? t.selfGuided : 0)}
@@ -543,10 +543,12 @@ function enqueue(op) {
   queue.push(op);
   savePhone();
 }
+let panelPushed = false, ignorePop = false;
+function dropPanelHistory() { if (panelPushed) { panelPushed = false; ignorePop = true; try { history.back(); } catch (e) { ignorePop = false; } } }
 function dispatch(op, opts = {}) {
   enqueue(op);
   if (!online && queue.length === 1) toast('Saved on the phone. Changes sync when the phone has signal again.');
-  if (!opts.keepPanel) { ui.panel = null; ui.panelError = ''; }
+  if (!opts.keepPanel) { ui.panel = null; ui.panelError = ''; dropPanelHistory(); }
   renderPhone();
   if (ui.refocus) { const el = document.getElementById(ui.refocus); ui.refocus = null; if (el && !el.disabled) el.focus(); }
   soonSync();
@@ -762,7 +764,7 @@ document.addEventListener('submit', e => {
   if (kind === 'signin') {
     const g = guideByCode((v.code || '').trim());
     if (!g) { ui.signinError = !codeSalt ? 'The guide list has not loaded yet. Wait for signal, then try again.' : "That code isn't recognised. Check it with your supervisor and try again."; renderPhone(); document.getElementById('ph-code').focus(); return; }
-    phoneGuide = g.id; lastActivity = Date.now(); ui.signinError = ''; ui.panel = null; renderPhone(); soonSync(); return;
+    phoneGuide = g.id; lastActivity = Date.now(); ui.signinError = ''; ui.panel = null; dropPanelHistory(); renderPhone(); soonSync(); return;
   }
   if (kind === 'admin-signin') {
     const code = (v.code || '').trim();
@@ -805,7 +807,7 @@ document.addEventListener('submit', e => {
     if (v.reason === 'Other' && !note) return panelFail('Add a note explaining why there was no tour.');
     if (self == null) return panelFail(`Enter the self-guided count, from 0 to ${CONFIG.maxGuests}.`);
     if (v.reason === 'Guests chose self-guided' && !self) return panelFail('Enter how many guests chose self-guided.');
-    return dispatch({ type: 'noTour', actor: phoneGuide, tourId: ref || newId('t'), date, slot: f.dataset.slot, reason: note ? `${v.reason}: ${note}` : v.reason, selfGuided: self });
+    return dispatch({ type: 'noTour', actor: phoneGuide, tourId: ref || newId('t'), date, ...(f.dataset.slot ? { slot: f.dataset.slot } : {}), reason: note ? `${v.reason}: ${note}` : v.reason, selfGuided: self });
   }
   if (['range', 'settings'].includes(kind)) return adminSubmit(kind, v);
   const tour = currentTour(ref);
@@ -949,10 +951,10 @@ document.addEventListener('click', e => {
     ui.refocus = b.id;
     dispatch({ type: 'counts', actor: phoneGuide, tourId: tour.id, kind: k, ...(showsBooked(k) ? {} : { group: '' }) }, { keepPanel: true });
   }
-  else if (act === 'open') { ui.panel = { kind: b.dataset.kind, ref: b.dataset.ref || null }; ui.panelError = ''; renderPhone();
+  else if (act === 'open') { ui.panel = { kind: b.dataset.kind, ref: b.dataset.ref || null }; ui.panelError = ''; try { history.pushState({ panel: 1 }, ''); panelPushed = true; } catch (e) {} renderPhone();
     const first = document.querySelector('#phone form input:not([type=hidden]), #phone form select'); if (first) first.focus(); }
-  else if (act === 'close') { ui.panel = null; ui.panelError = ''; renderPhone(); }
-  else if (act === 'signout') { phoneGuide = null; ui.panel = null; renderPhone(); }
+  else if (act === 'close') { ui.panel = null; ui.panelError = ''; renderPhone(); dropPanelHistory(); }
+  else if (act === 'signout') { phoneGuide = null; ui.panel = null; dropPanelHistory(); renderPhone(); }
   else if (act === 'ordmove') {
     const s = phoneState(), date = dayKey(now());
     const draft = ui.orderDraft || [...(s.orders[date] || CONFIG.guides.map(g => g.id))];
@@ -1035,7 +1037,13 @@ function tick() {
 
 
 // ---------- start ----------
-window.addEventListener('hashchange', () => { if (PAGE === 'phone') { phoneMode = location.hash === '#end' ? 'end' : 'start'; ui.panel = null; renderPhone(); } });
+// Back button: closes an open panel instead of leaving the page. The extra history entry is added when a panel opens.
+window.addEventListener('popstate', () => {
+  if (PAGE !== 'phone') return;
+  if (ignorePop) { ignorePop = false; return; }
+  if (ui.panel) { panelPushed = false; ui.panel = null; ui.panelError = ''; renderPhone(); }
+});
+window.addEventListener('hashchange', () => { if (PAGE === 'phone') { phoneMode = location.hash === '#end' ? 'end' : 'start'; ui.panel = null; panelPushed = false; renderPhone(); } });
 window.addEventListener('online', () => { if (PAGE === 'phone') soonSync(0); });
 if (PAGE === 'tv') {
   // Testing only: tv.html?at=15:18 shows the TV as it would look at that time today.
