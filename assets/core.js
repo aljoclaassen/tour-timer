@@ -10,7 +10,7 @@ const CONFIG = {
   joinWindowLimits: [5, 30],
   preCallMin: 5,              // TV calls guests to the gathering area this long before a tour
   claimOpenMin: 60,           // a scheduled tour can be taken this long before it starts
-  startGraceMin: 5,           // leaving within this of the slot needs no reason
+  startGraceMin: 15,          // leaving within this of the slot needs no reason (same as the join window)
   dueSoonMin: 30,             // "No tour" appears this close to an unclaimed slot
   maxGuests: 80,
   autoSendTime: '17:00',
@@ -81,6 +81,8 @@ function scheduledType(date, slot, time) {
   if (diff > CONFIG.startGraceMin) return 'Late start';
   return 'Scheduled';
 }
+// A tour carrying booked guests is never flagged early or late: booked groups always get the next tour.
+const slotType = t => (t.booked > 0 ? 'Scheduled' : scheduledType(t.date, t.slot, t.start));
 const rowTime = t => t.start ?? t.plannedAt ?? t.claimedAt;
 // Both halves of a split sit at their slot's time, so 14:30 shows as two 14:30 cards.
 const shownTime = t => t.slot || (t.splitLabel && t.relatedSlot) || fmtTime(rowTime(t));
@@ -143,7 +145,7 @@ function applyOp(s, op, syncedAt) {
       t.start = op.time; t.status = 'running';
       if (op.startFrom) t.startFrom = op.startFrom;
       if (t.startFrom === 'end') t.walkIns = false; // guests at the TV can't catch a tour that left from the other end
-      if (t.slot) { t.type = scheduledType(t.date, t.slot, t.start); if (op.reason) t.reason = op.reason; }
+      if (t.slot) { t.type = slotType(t); if (op.reason) t.reason = op.reason; }
       const where = t.startFrom === 'end' ? ' from the end point' : '';
       if (op.pending) { t.pending = true; log('Started tour, details to follow', `${tourLabel(t)} with ${guideName(t.guideId)}, departed ${fmtTime(t.start)}${where}`); return; }
       log('Started tour', `${tourLabel(t)} with ${guideName(t.guideId)}, ${guestText(t)}${t.group ? `, group ${t.group}` : ''}${t.selfGuided ? `, ${t.selfGuided} chose self-guided` : ''}, departed ${fmtTime(t.start)}${where}${op.reason ? `. Reason: ${op.reason}` : ''}`);
@@ -195,7 +197,7 @@ function applyOp(s, op, syncedAt) {
       set('start', 'departure', fmtTime); set('end', 'return', fmtTime); set('kind', 'type', v => CONFIG.kinds[v]);
       set('pub', 'public guests'); set('booked', 'booked guests'); set('group', 'group'); set('selfGuided', 'self-guided');
       if (!parts.length) return;
-      if (t.slot) t.type = scheduledType(t.date, t.slot, t.start);
+      if (t.slot) t.type = slotType(t);
       log('Corrected tour', `${tourLabel(t)}: ${parts.join('; ')}. Reason: ${op.reason}`);
       return;
     }
