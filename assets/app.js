@@ -175,7 +175,7 @@ const ownCode = t => needCode(t) ? codeInput('f-code', 'code', `${esc(guideName(
 const splitStyle = t => t.splitId ? ` style="--sc: var(--split-${t.splitColour})"` : '';
 const splitChip = t => t.splitId ? `<span class="chip split"${splitStyle(t)}>Split ${t.splitLabel}</span>` : '';
 
-const needsReason = t => !!(t.slot && t.start && scheduledType(t.date, t.slot, t.start) !== 'Scheduled' && !t.reason);
+const needsReason = t => !!(t.slot && t.start && !(t.booked > 0) && scheduledType(t.date, t.slot, t.start) !== 'Scheduled' && !t.reason);
 const reasonFields = (label, hint) => `<div class="field"><label for="f-reason">${label}</label>
     <select id="f-reason" name="reason"><option value="">${hint ? 'No reason needed' : 'Choose a reason'}</option>${options([...CONFIG.lateReasons, 'Other'])}</select>
     ${hint ? `<span class="hint">${hint}</span>` : ''}</div>
@@ -231,7 +231,7 @@ function panelHtml(kind, t, s) {
         ${ownCode(t)}
         ${needCode(t) ? kindFields('f-s', t) : ''}
       </div>
-      ${t.slot ? reasonFields('Reason for starting late or early', `Needed if the tour leaves more than ${CONFIG.startGraceMin} minutes from ${t.slot}.`) : ''}
+      ${t.slot ? reasonFields('Reason for starting late or early', `Only needed if the tour leaves more than ${CONFIG.startGraceMin} minutes from ${t.slot}. Never needed when booked guests are on the tour.`) : ''}
       <label class="check" for="f-later"><input type="checkbox" id="f-later" name="later"> Finish details later</label>
       <p class="hint">No time for the counts or reason? Tick this and complete them before the tour ends. The tour stays out of the report until then.</p>
       ${errLine()}
@@ -307,7 +307,7 @@ function panelHtml(kind, t, s) {
         <div class="field"><label for="x-rel">Linked to slot</label><select id="x-rel" name="related"><option value="">None</option>${options(slots)}</select></div>
         ${here ? kindFields('x', { kind: 'public' }) : `<div class="field"><label for="x-group">Booked group or company</label><input id="x-group" name="group" autocomplete="off"><span class="hint">Needed for a booked tour.</span></div>`}
       </div>
-      <div class="field"><label for="x-reason">Reason</label><input id="x-reason" name="reason" autocomplete="off" placeholder="For example: unbooked group needed to go straight away"><span class="hint">Needed unless it's a booked tour.</span></div>
+      <div class="field"><label for="x-reason">Reason</label><input id="x-reason" name="reason" autocomplete="off" placeholder="For example: unbooked group needed to go straight away"><span class="hint">Needed unless it's a booked group.</span></div>
       ${here ? `<label class="check" for="x-later"><input type="checkbox" id="x-later" name="later"> Finish details later</label>` : ''}
       ${errLine()}
       <div class="row-flex"><button class="btn primary">${here ? 'Start tour from here' : 'Log tour'}</button><button type="button" class="btn" data-act="close">Cancel</button></div></form>`;
@@ -718,7 +718,21 @@ function renderAll() {
 
 function timeFromInput(v) { return HM_RE.test(v || '') ? at(dayKey(now()), v) : null; }
 function countFrom(v) { if (v === '' || v == null) return null; const n = Number(v); return Number.isInteger(n) && n >= 0 && n <= CONFIG.maxGuests ? n : null; }
-function panelFail(msg) { ui.panelError = msg; renderPhone(); const f = document.querySelector('#phone form input, #phone form select'); if (f) f.focus(); }
+// Shows an error on the open form without wiping what the guide has typed (times, counts, notes).
+// Guide codes are not kept: they are retyped.
+function panelFail(msg) {
+  const old = document.querySelector('#phone form[data-form]');
+  const kept = old ? { form: old.dataset.form, ref: old.dataset.ref, vals: [...old.elements].filter(el => el.name && !/code/i.test(el.name) && el.type !== 'password' && el.type !== 'submit' && el.type !== 'button').map(el => [el.name, el.type === 'checkbox' ? el.checked : el.value, el.type]) } : null;
+  ui.panelError = msg; renderPhone();
+  const now = document.querySelector('#phone form[data-form]');
+  if (kept && now && now.dataset.form === kept.form && now.dataset.ref === kept.ref) {
+    kept.vals.forEach(([name, val, type]) => {
+      const el = now.elements[name]; if (!el || el.length) return;
+      if (type === 'checkbox') el.checked = val; else if (el.tagName !== 'SELECT' || [...el.options].some(o => o.value === val)) el.value = val;
+    });
+  }
+  const f = document.querySelector('#phone form input, #phone form select'); if (f) f.focus();
+}
 const currentTour = id => phoneState().tours.find(x => x.id === id);
 
 // Reads the group type and counts from a form, zeroing the fields that type doesn't use.
@@ -789,7 +803,8 @@ document.addEventListener('submit', e => {
     if (here && !codeMatches(v.guide, (v.code || '').trim())) return panelFail(`That isn't ${guideName(v.guide)}'s code.`);
     if (time == null) return panelFail('Enter the departure time as HH:MM.');
     if (!here && v.type === 'Booked' && !group) return panelFail("Add the booked group's name or booking reference.");
-    if (v.type !== 'Booked' && !reason) return panelFail('Add a reason, for example "Unbooked group needed to go straight away".');
+    const bookedGroup = v.type === 'Booked' || !!group || ['booked', 'both'].includes(v.kind);
+    if (!bookedGroup && !reason) return panelFail('Add a reason, for example "Unbooked group needed to go straight away".');
     const guide = here ? v.guide : phoneGuide, tourId = newId('t');
     if (!here) return dispatch({ type: 'createExtra', actor: guide, tourId, date, tourType: v.type, relatedSlot: v.related || null, group, reason, plannedAt: time, startFrom: 'start' });
     const later = !!v.later;
@@ -824,7 +839,7 @@ document.addEventListener('submit', e => {
     if (!later) {
       if (pub + booked < 1) return panelFail('Add at least one guest before starting, or tick Finish details later. If nobody is joining, record no tour.');
       if (showsBooked(c.kind) && !c.group) return panelFail("Add the booked group's name before starting, or tick Finish details later.");
-      if (tour.slot) {
+      if (tour.slot && !(c.booked > 0)) {
         const type = scheduledType(date, tour.slot, time), note = (v.note || '').trim();
         if (v.reason === 'Other' && !note) return panelFail('Add a note for the Other reason.');
         reason = v.reason === 'Other' ? `Other: ${note}` : v.reason ? `${v.reason}${note ? `: ${note}` : ''}` : '';
