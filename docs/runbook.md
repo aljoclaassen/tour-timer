@@ -12,7 +12,7 @@ Owner: Aljo Claassen. Test phase: personal Google account (Sheet "Tour Timer (te
    - `assets/core.js` changed: replace `Core.gs` with the same contents.
 3. Deploy › Manage deployments › pencil icon › Version: New version. Description: the CHANGELOG version, for example `v1.1.0 split tours`. Deploy. The web address stays the same.
    - Never choose New deployment for an update: it makes a new address the pages don't know, and the TV and phones lose their connection.
-4. A page or anything in `assets/` changed: bump `CACHE` in `sw.js` (tour-timer-v3 and so on) and commit.
+4. A page or anything in `assets/` changed: bump `CACHE` in `sw.js` (tour-timer-v4 and so on) and commit.
 5. Add the CHANGELOG entry with the new deployment version number, tag the release in GitHub, and check on a phone.
 
 ## Rolling back
