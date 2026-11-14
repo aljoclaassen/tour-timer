@@ -42,4 +42,4 @@ Follow `docs/runbook.md`. In short: change the file in this repo first, then cop
 
 ## Going live
 
-Waits on: Carmen Jacobs and Douglas Eriksen approving Google Workspace and GitHub; organisational accounts; the POPIA position on storing guide names confirmed before real names go in. Steps are in `SETUP.md`, Part F.
+Waits on: the Head of BOA Foundation and the CEO approving Google Workspace and GitHub; organisational accounts; the POPIA position on storing guide names confirmed before real names go in. Steps are in `SETUP.md`, Part F.

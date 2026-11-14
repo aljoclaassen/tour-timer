@@ -2,8 +2,14 @@
 
 Newest first. Versions follow SemVer. Each entry records the live Apps Script deployment version.
 
+## Unreleased (documentation only, no change to the running app)
+- Added `docs/guide.md`, the plain-language App Guide.
+- Completed `docs/brief.md`: how tours were tracked before, the success measure, the appetite, and the parked visitor-reminder idea.
+- Public documents now name roles (Head of BOA Foundation, CEO, Information Officer) instead of colleagues' names.
+- Corrected the 1.0.0 entry: the service worker cache at release was `tour-timer-v3`, not `tour-timer-v2`.
+
 ## [1.0.0] - 2026-11-10
-Apps Script deployment: version 2 (3 November 2026, 09:52), description "v1.0.0 test baseline". Pages: commit of 3 November 2026. Service worker cache: tour-timer-v2.
+Apps Script deployment: version 2 (3 November 2026, 09:52), description "v1.0.0 test baseline". Pages: commit of 3 November 2026. Service worker cache: tour-timer-v3.
 
 First tagged release. Records the build already in test use; no code changes.
 

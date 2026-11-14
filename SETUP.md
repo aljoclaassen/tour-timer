@@ -1,6 +1,6 @@
 # Tour Timer setup
 
-About 45 minutes the first time. Test phase: personal Google and GitHub accounts and sample data only. Nothing real goes in until Carmen Jacobs and Douglas Eriksen approve Google Workspace and GitHub, and Annelize Greeff confirms the POPIA position on guide names.
+About 45 minutes the first time. Test phase: personal Google and GitHub accounts and sample data only. Nothing real goes in until the Head of BOA Foundation and the CEO approve Google Workspace and GitHub, and the Information Officer confirms the POPIA position on guide names.
 
 ## Part A: the Google Sheet and script
 1. In your Google account, create a new Google Sheet named `Tour Timer (test)`.
@@ -71,4 +71,4 @@ See `docs/runbook.md`, "Updating the code". The repo changes first; the Apps Scr
 | Codes | For attribution, not security. Someone with a phone link and technical skill could work out a 4-digit guide code. Keep the admin code to admin staff |
 | Sample codes | The sample guide codes are written in `Code.gs`, which is public in this repo. Replace them in the Guides tab before go-live |
 | Retention | The Ops tab grows by a few hundred rows a week. Agree an archive routine with the Information Officer, in line with the five-year retention rule |
-| Open | Annelize Greeff to confirm the POPIA position on storing guide names before real names go in |
+| Open | The Information Officer to confirm the POPIA position on storing guide names before real names go in |
