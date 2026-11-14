@@ -1,6 +1,6 @@
 # Tour Timer: App Guide
 
-What Tour Timer is, how it is built, and why, in plain language. For the general ideas (server, database, deployment, cache and so on) this guide links to the Concepts handbook in the `build-standards` repo instead of repeating them. Version 1, 14 November 2026, matching release v1.0.0.
+What Tour Timer is, how it is built, and why, in plain language. For the general ideas (server, database, deployment, cache and so on) this guide links to the Concepts handbook in the `build-standards` repo instead of repeating them. Version 1, 14 November 2026, matching release v1.0.1.
 
 **Status:** test phase. Personal Google and GitHub accounts, four sample guides, sample data. In daily test use since 30 October 2026. Going live waits on approvals (see section 6).
 
@@ -46,7 +46,7 @@ These are the operating rules the app follows. They came from how tours actually
 | Rule | Setting now | Why |
 | --- | --- | --- |
 | A scheduled tour can be taken from | 60 minutes before | Lets a guide claim the next tour early without blocking later ones |
-| Leaving early or late needs a reason after | 15 minutes either side | Small delays are normal; bigger ones are worth knowing about. One-tap reasons: guests watching a cheetah walk, waiting for a booked group, waiting for late arrivals, or other with a note |
+| Leaving early or late needs a reason after | 15 minutes either side; never for a tour with booked guests | Small delays are normal; bigger ones are worth knowing about. Booked groups always take the next tour. One-tap reasons: guests watching a cheetah walk, waiting for a booked group, waiting for late arrivals, or other with a note |
 | TV calls guests to the waiting area | 5 minutes before | Time to gather without crowding |
 | TV shows "you can still join" after departure | 15 minutes (admin can set 5 to 30) | Late arrivals can still catch up, but only on tours open to walk-ins that left from the start point |
 | "No tour" can be logged | From 30 minutes before an unclaimed slot | Records why a slot did not run |
@@ -181,7 +181,7 @@ Each answer follows the six parts from the SOP.
 
 | Area | State |
 | --- | --- |
-| Release | v1.0.0 test baseline, 10 November 2026. Apps Script deployment version 2. Cache `tour-timer-v3` |
+| Release | v1.0.1, 13 November 2026. Apps Script deployment version 3. Cache `tour-timer-v3` |
 | Brand | Cango Wildlife "Sun disc" direction on all screens. Recolouring the spots needs the marketing lead's confirmation |
 | TV and sun | No TV installed yet. The spot gets direct sun; shading is the real fix. A Bright conditions schedule (v10) is planned once sun photos are reviewed |
 | Audio | Parked until a live TV test |
